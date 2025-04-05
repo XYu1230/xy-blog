@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stdu.mapper.TagMapper">
+    
+    <resultMap id="BaseResultMap" type="com.stdu.entity.Tag">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+        id, name, create_time
+    </sql>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tags
+        WHERE id = #{id}
+    </select>
+    
+    <select id="findByName" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tags
+        WHERE name = #{name}
+    </select>
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tags
+        ORDER BY create_time DESC
+    </select>
+    
+    <select id="findByBlogId" resultMap="BaseResultMap">
+        SELECT t.id, t.name, t.create_time
+        FROM tags t
+        JOIN blog_tags bt ON t.id = bt.tag_id
+        WHERE bt.blog_id = #{blogId}
+    </select>
+    
+    <insert id="insert" parameterType="com.stdu.entity.Tag" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tags (name, create_time)
+        VALUES (#{name}, #{createTime})
+    </insert>
+</mapper> 

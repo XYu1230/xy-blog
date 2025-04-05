@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stdu.mapper.BlogMapper">
+    
+    <resultMap id="BaseResultMap" type="com.stdu.entity.Blog">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="summary" property="summary" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <association property="author" javaType="com.stdu.entity.User">
+            <id column="author_id" property="id" />
+            <result column="author_username" property="username" />
+            <result column="author_nickname" property="nickname" />
+            <result column="author_avatar" property="avatar" />
+        </association>
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+        id, user_id, title, content, summary, create_time, update_time
+    </sql>
+    
+    <sql id="Join_Column_List">
+        b.id, b.user_id, b.title, b.content, b.summary, b.create_time, b.update_time,
+        u.id as author_id, u.username as author_username, u.nickname as author_nickname, u.avatar as author_avatar
+    </sql>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT <include refid="Join_Column_List" />
+        FROM blogs b
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.id = #{id}
+    </select>
+    
+    <select id="findList" resultMap="BaseResultMap">
+        SELECT <include refid="Join_Column_List" />
+        FROM blogs b
+        LEFT JOIN users u ON b.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (b.title LIKE CONCAT('%', #{keyword}, '%') OR b.content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="tagId != null">
+                AND b.id IN (SELECT blog_id FROM blog_tags WHERE tag_id = #{tagId})
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM blogs b
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (b.title LIKE CONCAT('%', #{keyword}, '%') OR b.content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="tagId != null">
+                AND b.id IN (SELECT blog_id FROM blog_tags WHERE tag_id = #{tagId})
+            </if>
+        </where>
+    </select>
+    
+    <insert id="insert" parameterType="com.stdu.entity.Blog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO blogs (user_id, title, content, summary, create_time, update_time)
+        VALUES (#{userId}, #{title}, #{content}, #{summary}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="update" parameterType="com.stdu.entity.Blog">
+        UPDATE blogs
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            update_time = #{updateTime}
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM blogs WHERE id = #{id}
+    </delete>
+    
+    <update id="updateCommentCount">
+        UPDATE blogs
+        SET comment_count = #{count}
+        WHERE id = #{blogId}
+    </update>
+    
+    <update id="updateLikeCount">
+        UPDATE blogs
+        SET like_count = #{count}
+        WHERE id = #{blogId}
+    </update>
+</mapper> 

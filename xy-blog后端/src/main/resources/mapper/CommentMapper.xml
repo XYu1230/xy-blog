@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stdu.mapper.CommentMapper">
+    
+    <resultMap id="BaseResultMap" type="com.stdu.entity.Comment">
+        <id column="id" property="id" />
+        <result column="blog_id" property="blogId" />
+        <result column="user_id" property="userId" />
+        <result column="content" property="content" />
+        <result column="create_time" property="createTime" />
+        <association property="user" javaType="com.stdu.entity.User">
+            <id column="user_id" property="id" />
+            <result column="username" property="username" />
+            <result column="nickname" property="nickname" />
+            <result column="avatar" property="avatar" />
+        </association>
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+        id, blog_id, user_id, content, create_time
+    </sql>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT c.id, c.blog_id, c.user_id, c.content, c.create_time,
+               u.username, u.nickname, u.avatar
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.id = #{id}
+    </select>
+    
+    <select id="findByBlogId" resultMap="BaseResultMap">
+        SELECT c.id, c.blog_id, c.user_id, c.content, c.create_time,
+               u.username, u.nickname, u.avatar
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.blog_id = #{blogId}
+        ORDER BY c.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <select id="countByBlogId" resultType="int">
+        SELECT COUNT(*)
+        FROM comments
+        WHERE blog_id = #{blogId}
+    </select>
+    
+    <insert id="insert" parameterType="com.stdu.entity.Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comments (blog_id, user_id, content, create_time)
+        VALUES (#{blogId}, #{userId}, #{content}, #{createTime})
+    </insert>
+    
+    <delete id="deleteById">
+        DELETE FROM comments WHERE id = #{id}
+    </delete>
+    
+    <delete id="deleteByBlogId">
+        DELETE FROM comments WHERE blog_id = #{blogId}
+    </delete>
+</mapper> 
